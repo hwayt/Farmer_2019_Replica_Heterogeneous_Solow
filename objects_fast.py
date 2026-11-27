@@ -46,9 +46,9 @@ class economy:
         r = self.alpha * self.total_capital ** (self.alpha -1) * self.Labour **(1-self.alpha)
         w = (1-self.alpha) * self.total_capital ** (self.alpha) * self.Labour **(-self.alpha)
 
-        initial_save = self.household_save
-        initial_capital = self.household_capital
-        initial_consumption = self.household_consumption
+        initial_save = self.household_save.copy()
+        initial_capital = self.household_capital.copy()
+        initial_consumption = self.household_consumption.copy()
         initial_total_capital = self.total_capital
 
         # Update the households
@@ -60,30 +60,29 @@ class economy:
 
         change_total_cap = change_cap.sum()
 
-        # Store old saving rate
-        old_saving_rate = self.household_save
-
         # Find who updates their savings
         test_figures = rng.random(self.N)
         updates = test_figures < self.dt/self.update_freq
 
+        rows = np.where(updates)[0]
 
-        # Matrix of neighbor consumption
-        neighbor_consumption = self.neighbors * self.household_consumption
-        # Vector of maximum neighbor consumption indexes
-        max_neighbor_consumption = neighbor_consumption.argmax(axis = 1)
+        if(rows.size > 0):
+            
+            # Matrix of neighbor consumption
+            neighbor_consumption = self.neighbors[rows] * self.household_consumption
+            # Vector of maximum neighbor consumption indexes
+            max_neighbor_consumption = neighbor_consumption.argmax(axis = 1)
+    
+            # Vector of raw savings updates
+            raw_savings = self.household_save[max_neighbor_consumption]
+            old_savings = self.household_save[rows]
+            
+            change_rate = raw_savings != old_savings
+            
+            # Add in noise & Clip
+            raw_savings_2 = (1-change_rate)*old_savings + change_rate * np.clip(raw_savings + rng.uniform(-0.01,0.01, rows.size), 0,1)
 
-        # Vector of raw savings updates
-        raw_savings = self.household_save[max_neighbor_consumption]
-
-        # Vector of raw savings updates only updated when possible
-        raw_savings_2 = (1-updates)*old_saving_rate + updates * raw_savings
-
-        # Figure out which have been updated
-        updates_2 = raw_savings_2 != old_saving_rate
-
-        # Add in noise & Clip
-        self.household_save = np.clip(raw_savings_2 + updates_2 * rnd.uniform(-0.01,0.01, self.N), 0,1)
+            self.household_save[rows] = raw_savings_2
 
         self.total_capital += change_total_cap
 

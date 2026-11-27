@@ -1,4 +1,4 @@
-from objects import economy
+from objects_fast import economy
 import numpy as np
 import matplotlib.pyplot as plt
 
