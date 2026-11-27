@@ -29,6 +29,9 @@ class economy:
         self.neighbors = neighbors
         
 
+        self.households = np.array(N)
+        
+        
         self.households = []
         for i in range(N):
             save_rate = rng.uniform(0,1)
@@ -44,6 +47,8 @@ class economy:
         self.capital_history = []
         self.consumption_history = []
         self.total_capital_history = []
+        self.tick = 0
+        self.record_every = 100
 
 
     def next_period(self):
@@ -55,7 +60,6 @@ class economy:
         initial_save = []
         initial_capital = []
         initial_consumption = []
-        initial_total_capital = self.total_capital
 
         for i in range(self.N):
             
@@ -82,7 +86,7 @@ class economy:
             # update saving rate - consume and then compare
             household = self.households[i]
             
-            if(rng.random() < self.update_freq*self.dt):
+            if(rng.random() < self.dt/self.update_freq):
                 # find maximum savings rate
                 highest_consump_neighbor = i
                 household_neighbors = self.neighbors[i]
@@ -103,7 +107,10 @@ class economy:
             self.households[i].save = new_savings_rate[i]
 
         # update the history
-        self.save_history.append(initial_save)
-        self.capital_history.append(initial_capital)
-        self.consumption_history.append(initial_consumption)
-        self.total_capital_history.append(initial_total_capital)
+        self.tick += 1
+        if self.tick % self.record_every == 0:
+            self.save_history.append(initial_save)
+            self.capital_history.append(initial_capital)
+            self.consumption_history.append(initial_consumption)
+            self.total_capital_history.append(self.total_capital)
+
