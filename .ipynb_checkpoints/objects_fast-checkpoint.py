@@ -17,11 +17,11 @@ class economy:
         dt: how much real time passes per tick.  dt -> 0, economy becomes continuous
 
     """
-    def __init__(self, N, Labour, neighbors, update_freq, alpha, dep, dt):
+    def __init__(self, N, Labour, capital_pc, neighbors, update_freq, alpha, dep, dt):
         self.N = N
         self.Labour = Labour
         self.neighbors = neighbors
-        self.total_capital = N
+        self.total_capital = N* capital_pc
         self.update_freq = update_freq
         self.alpha = alpha
         self.dep = dep
@@ -37,7 +37,7 @@ class economy:
 
         # Set up numpy arrays for the households
         self.household_save = rng.uniform(0,1,size=self.N)
-        self.household_capital = np.ones(self.N)
+        self.household_capital = np.full(self.N, capital_pc)
         self.household_consumption = np.zeros(self.N)
 
 
